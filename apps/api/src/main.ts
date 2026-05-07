@@ -2,15 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
+import { PrismaService } from './common/prisma/prisma.service.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Prisma Shutdown Hooks
+  const prismaService = app.get(PrismaService);
+  await prismaService.enableShutdownHooks(app);
 
   // Security
   app.enableCors();
 
   // Global Prefix
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api');
 
   // Versioning (e.g., /api/v1/...)
   app.enableVersioning({

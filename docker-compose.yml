@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: skillx-db
+    hostname: skillx-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-skillx}
+    ports:
+      - "5433:5432"
+    volumes:
+      - skillx_postgres_data:/var/lib/postgresql/data
+    networks:
+      - skillx-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB:-skillx}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  skillx-network:
+    driver: bridge
+
+volumes:
+  skillx_postgres_data:

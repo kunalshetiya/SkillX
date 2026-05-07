@@ -1,6 +1,7 @@
 {
   "extends": "@skillx/config/typescript/base.json",
   "compilerOptions": {
+    "types": ["node"],
     "outDir": "dist",
     "rootDir": "src",
     "noEmit": false,

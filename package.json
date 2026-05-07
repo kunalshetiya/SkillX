@@ -1,7 +1,7 @@
 {
   "name": "skillx",
   "private": true,
-  "packageManager": "npm@YOUR_VERSION",
+  "packageManager": "npm@11.6.1",
   "description": "SkillX - AI-powered skill barter and mentorship platform",
   "workspaces": [
     "apps/*",
