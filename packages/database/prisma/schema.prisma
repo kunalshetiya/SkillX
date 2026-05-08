@@ -84,10 +84,6 @@ model Skill {
   createdAt   DateTime @default(now())
 
   users               UserSkill[]
-
-  offeredRequests     BarterRequest[] @relation("OfferedSkill")
-
-  requestedRequests   BarterRequest[] @relation("RequestedSkill")
 }
 model UserSkill {
   id               String      @id @default(cuid())
@@ -106,6 +102,9 @@ model UserSkill {
   user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill            Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
+  offeredRequests     BarterRequest[] @relation("OfferedUserSkill")
+  requestedRequests   BarterRequest[] @relation("RequestedUserSkill")
+
   @@unique([userId, skillId, type])
 }
 model BarterRequest {
@@ -114,8 +113,8 @@ model BarterRequest {
   senderId          String
   receiverId        String
 
-  offeredSkillId    String
-  requestedSkillId  String
+  offeredUserSkillId    String
+  requestedUserSkillId  String
 
   message           String?
 
@@ -128,9 +127,9 @@ model BarterRequest {
 
   receiver          User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
-  offeredSkill      Skill @relation("OfferedSkill", fields: [offeredSkillId], references: [id])
+  offeredUserSkill      UserSkill @relation("OfferedUserSkill", fields: [offeredUserSkillId], references: [id])
 
-  requestedSkill    Skill @relation("RequestedSkill", fields: [requestedSkillId], references: [id])
+  requestedUserSkill    UserSkill @relation("RequestedUserSkill", fields: [requestedUserSkillId], references: [id])
 
   session           Session?
 
