@@ -160,8 +160,6 @@ export function ProfileDashboard() {
                     <p className="text-gray-400 italic text-sm py-4">You haven't listed any learning goals yet.</p>
                   )}
                 </div>
-                  )}
-                </div>
               </div>
             </div>
           </div>
