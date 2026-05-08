@@ -3,7 +3,7 @@
   "display": "NestJS",
   "extends": "./base.json",
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "ESNext",
     "moduleResolution": "Node",
     "target": "ES2021",
     "emitDecoratorMetadata": true,
@@ -14,6 +14,7 @@
     "strictPropertyInitialization": false,
     "types": ["node"],
     "outDir": "dist",
-    "noEmit": false
+    "noEmit": false,
+    "incremental": false
   }
 }

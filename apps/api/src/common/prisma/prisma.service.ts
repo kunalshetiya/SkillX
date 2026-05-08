@@ -1,8 +1,11 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { PrismaClient } from '@skillx/database';
+import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
+import { PrismaClient } from "@skillx/database";
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   async onModuleInit() {
     await this.$connect();
   }
@@ -17,7 +20,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    * EnableShutdownHooks is called in main.ts.
    */
   async enableShutdownHooks(app: any) {
-    process.on('beforeExit', async () => {
+    process.on("beforeExit", async () => {
       await app.close();
     });
   }

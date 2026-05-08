@@ -1,14 +1,20 @@
-import { Injectable, NotFoundException, ConflictException, OnModuleInit, Logger } from '@nestjs/common';
-import { Prisma } from '@skillx/database';
-import { PrismaService } from '../../common/prisma/prisma.service.js';
-import { UpdateUserDto } from './dto/update-user.dto.js';
-import { CreateUserSkillDto } from './dto/create-user-skill.dto.js';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  OnModuleInit,
+  Logger,
+} from "@nestjs/common";
+import { Prisma } from "@skillx/database";
+import { PrismaService } from "../../common/prisma/prisma.service.js";
+import { UpdateUserDto } from "./dto/update-user.dto.js";
+import { CreateUserSkillDto } from "./dto/create-user-skill.dto.js";
 
 @Injectable()
 export class UsersService implements OnModuleInit {
   private readonly logger = new Logger(UsersService.name);
   // Placeholder mock user ID for MVP phase
-  private readonly MOCK_USER_ID = 'mock-user-id';
+  private readonly MOCK_USER_ID = "mock-user-id";
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -17,22 +23,22 @@ export class UsersService implements OnModuleInit {
   }
 
   private async seedMockUser() {
-    this.logger.log('Checking for default mock user...');
-    
+    this.logger.log("Checking for default mock user...");
+
     await this.prisma.user.upsert({
       where: { id: this.MOCK_USER_ID },
       update: {},
       create: {
         id: this.MOCK_USER_ID,
-        email: 'dev@skillx.com',
-        username: 'dev_user',
-        name: 'Development User',
-        bio: 'Automated mock user for MVP development.',
+        email: "dev@skillx.com",
+        username: "dev_user",
+        name: "Development User",
+        bio: "Automated mock user for MVP development.",
         credits: 500,
       },
     });
 
-    this.logger.log('Default mock user ensured.');
+    this.logger.log("Default mock user ensured.");
   }
 
   async getMe() {
@@ -48,7 +54,7 @@ export class UsersService implements OnModuleInit {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     return user;
@@ -82,8 +88,8 @@ export class UsersService implements OnModuleInit {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         // Handle unique constraint for username
-        if (error.code === 'P2002') {
-          throw new ConflictException('Username already taken');
+        if (error.code === "P2002") {
+          throw new ConflictException("Username already taken");
         }
       }
       throw error;
@@ -97,9 +103,9 @@ export class UsersService implements OnModuleInit {
     const skill = await this.prisma.skill.upsert({
       where: { name: skillName },
       update: {},
-      create: { 
+      create: {
         name: skillName,
-        slug: skillName.toLowerCase().replace(/\s+/g, '-'),
+        slug: skillName.toLowerCase().replace(/\s+/g, "-"),
       },
     });
 
@@ -117,8 +123,26 @@ export class UsersService implements OnModuleInit {
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ConflictException('You have already added this skill type');
+        if (error.code === "P2002") {
+          throw new ConflictException("You have already added this skill type");
+        }
+      }
+      throw error;
+    }
+  }
+
+  async removeUserSkill(userSkillId: string) {
+    try {
+      return await this.prisma.userSkill.delete({
+        where: {
+          id: userSkillId,
+          userId: this.MOCK_USER_ID, // Ensure user can only delete their own skills
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2025") {
+          throw new NotFoundException("Skill not found for your profile");
         }
       }
       throw error;

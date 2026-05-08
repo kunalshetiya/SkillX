@@ -46,4 +46,9 @@ export const profileService = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+
+  removeSkill: (id: string) => 
+    fetcher<void>(`/users/skills/${id}`, {
+      method: 'DELETE',
+    }),
 };

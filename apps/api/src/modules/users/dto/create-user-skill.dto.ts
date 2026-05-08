@@ -1,9 +1,16 @@
-import { IsString, IsEnum, IsInt, IsOptional, Min, MaxLength } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { SkillType, SkillLevel } from '@skillx/database';
+import {
+  IsString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  Min,
+  MaxLength,
+} from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { SkillType, SkillLevel } from "@skillx/database";
 
 export class CreateUserSkillDto {
-  @ApiProperty({ example: 'TypeScript', description: 'The name of the skill' })
+  @ApiProperty({ example: "TypeScript", description: "The name of the skill" })
   @IsString()
   skillName: string;
 
@@ -15,13 +22,19 @@ export class CreateUserSkillDto {
   @IsEnum(SkillLevel)
   level: SkillLevel;
 
-  @ApiPropertyOptional({ example: 3, description: 'Years of experience in this skill' })
+  @ApiPropertyOptional({
+    example: 3,
+    description: "Years of experience in this skill",
+  })
   @IsOptional()
   @IsInt()
   @Min(0)
   yearsExperience?: number;
 
-  @ApiPropertyOptional({ example: 'I have built several production apps using TypeScript.', description: 'A brief description of your proficiency' })
+  @ApiPropertyOptional({
+    example: "I have built several production apps using TypeScript.",
+    description: "A brief description of your proficiency",
+  })
   @IsOptional()
   @IsString()
   @MaxLength(500)

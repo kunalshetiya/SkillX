@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../common/prisma/prisma.service.js';
-import { GetSkillsQueryDto } from './dto/get-skills-query.dto.js';
-import { Prisma } from '@skillx/database';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../common/prisma/prisma.service.js";
+import { GetSkillsQueryDto } from "./dto/get-skills-query.dto.js";
+import { Prisma } from "@skillx/database";
 
 @Injectable()
 export class SkillsService {
@@ -17,7 +17,7 @@ export class SkillsService {
         skill: {
           name: {
             contains: search,
-            mode: 'insensitive',
+            mode: "insensitive",
           },
         },
       }),
@@ -38,7 +38,7 @@ export class SkillsService {
         skill: true,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
   }

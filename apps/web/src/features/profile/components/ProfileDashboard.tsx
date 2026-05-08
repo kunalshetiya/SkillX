@@ -47,6 +47,16 @@ export function ProfileDashboard() {
   
   if (!profile) return null;
 
+  const handleRemoveSkill = async (id: string) => {
+    if (!confirm('Are you sure you want to remove this skill?')) return;
+    try {
+      await profileService.removeSkill(id);
+      loadProfile();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
       {/* Header Section */}
@@ -129,7 +139,7 @@ export function ProfileDashboard() {
                 </h3>
                 <div className="flex flex-wrap gap-3">
                   {profile.skills.filter(s => s.type === 'OFFERING').map(skill => (
-                    <SkillBadge key={skill.id} skill={skill} />
+                    <SkillBadge key={skill.id} skill={skill} onRemove={() => handleRemoveSkill(skill.id)} />
                   ))}
                   {profile.skills.filter(s => s.type === 'OFFERING').length === 0 && (
                     <p className="text-gray-400 italic text-sm py-4">You haven't listed any skills to teach yet.</p>
@@ -144,10 +154,12 @@ export function ProfileDashboard() {
                 </h3>
                 <div className="flex flex-wrap gap-3">
                   {profile.skills.filter(s => s.type === 'LEARNING').map(skill => (
-                    <SkillBadge key={skill.id} skill={skill} />
+                    <SkillBadge key={skill.id} skill={skill} onRemove={() => handleRemoveSkill(skill.id)} />
                   ))}
                   {profile.skills.filter(s => s.type === 'LEARNING').length === 0 && (
                     <p className="text-gray-400 italic text-sm py-4">You haven't listed any learning goals yet.</p>
+                  )}
+                </div>
                   )}
                 </div>
               </div>
@@ -174,7 +186,7 @@ export function ProfileDashboard() {
   );
 }
 
-function SkillBadge({ skill }: { skill: any }) {
+function SkillBadge({ skill, onRemove }: { skill: any, onRemove: () => void }) {
   const levelColors: any = {
     BEGINNER: 'bg-slate-50 text-slate-700 border-slate-200',
     INTERMEDIATE: 'bg-green-50 text-green-700 border-green-200',
@@ -183,7 +195,16 @@ function SkillBadge({ skill }: { skill: any }) {
   };
 
   return (
-    <div className={`group px-4 py-2.5 rounded-xl border-2 transition-all hover:scale-105 ${levelColors[skill.level] || 'bg-gray-50 border-gray-100'}`}>
+    <div className={`group relative px-4 py-2.5 rounded-xl border-2 transition-all hover:scale-105 ${levelColors[skill.level] || 'bg-gray-50 border-gray-100'}`}>
+      <button 
+        onClick={(e) => {
+          e.preventDefault();
+          onRemove();
+        }}
+        className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600"
+      >
+        <X size={12} />
+      </button>
       <div className="flex flex-col">
         <span className="font-bold text-[15px] leading-tight">{skill.skill.name}</span>
         <span className="text-[10px] font-bold uppercase opacity-60 tracking-wider mt-0.5">{skill.level}</span>
