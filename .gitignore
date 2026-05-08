@@ -23,3 +23,11 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+# Turborepo
+.turbo
+
+# Turbo logs
+turbo-*.log
+
+# Logs
+*.log
