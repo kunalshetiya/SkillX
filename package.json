@@ -9,13 +9,14 @@
   ],
   "scripts": {
     "build": "turbo build",
+    "build:api": "npm run db:generate --workspace=@skillx/database && npm run build --workspace=@skillx/database && npm run build --workspace=@skillx/api",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "engines": {
-    "node": ">=20"
+    "node": "20.x"
   },
   "devDependencies": {
     "turbo": "^2.0.0"
