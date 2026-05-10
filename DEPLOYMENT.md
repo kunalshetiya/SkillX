@@ -40,7 +40,7 @@ This guide provides step-by-step instructions for deploying the SkillX platform 
 3. Connect your GitHub repository.
 4. Configure the service:
    - **Environment:** `Node`
-   - **Build Command:** `npm install && npm run build -- --filter=@skillx/api`
+   - **Build Command:** `npm install && npm run build --workspace=@skillx/api`
    - **Start Command:** `npm run start:prod --workspace=@skillx/api`
 5. Add **Environment Variables**:
    - `PORT`: `4000` (or leave default)
