@@ -5,6 +5,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prebuild": "npm run db:generate --workspace=@skillx/database",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
     "dev": "nest start --watch",
