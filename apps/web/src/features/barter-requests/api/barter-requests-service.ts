@@ -48,18 +48,18 @@ export const barterRequestsService = {
     offeredUserSkillId: string;
     requestedUserSkillId: string;
     message?: string;
-  }) => fetcher<BarterRequest>('/barter-requests', {
+  }, token?: string | null) => fetcher<BarterRequest>('/barter-requests', {
     method: 'POST',
     body: JSON.stringify(data),
-  }),
+  }, token),
 
-  getIncoming: () => fetcher<BarterRequest[]>('/barter-requests/incoming'),
+  getIncoming: (token?: string | null) => fetcher<BarterRequest[]>('/barter-requests/incoming', {}, token),
 
-  getOutgoing: () => fetcher<BarterRequest[]>('/barter-requests/outgoing'),
+  getOutgoing: (token?: string | null) => fetcher<BarterRequest[]>('/barter-requests/outgoing', {}, token),
 
-  updateStatus: (id: string, status: BarterRequestStatus) => 
+  updateStatus: (id: string, status: BarterRequestStatus, token?: string | null) => 
     fetcher<BarterRequest>(`/barter-requests/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
-    }),
+    }, token),
 };

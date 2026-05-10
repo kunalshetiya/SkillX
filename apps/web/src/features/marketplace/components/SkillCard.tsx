@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { MarketplaceSkill } from '../api/marketplace-service';
-import { Award, User, MessageCircle } from 'lucide-react';
+import { useUser, useAuth } from '@clerk/nextjs';
+import { MarketplaceSkill } from '@web/features/marketplace/api/marketplace-service';
+import { Award, User, MessageCircle, Loader2 } from 'lucide-react';
 import { BarterRequestModal } from '@web/features/barter-requests/components/BarterRequestModal';
 
 interface SkillCardProps {
@@ -8,7 +9,25 @@ interface SkillCardProps {
 }
 
 export function SkillCard({ skill }: SkillCardProps) {
+  const { user, isLoaded: userLoaded } = useUser();
+  const { isSignedIn } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Don't allow bartering with yourself
+  const isOwnSkill = user?.id === skill.user.id;
+
+  const handleBarterClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isSignedIn) {
+      alert('Please sign in to propose a barter.');
+      return;
+    }
+
+    console.log('SkillCard: Opening barter modal for', skill.skill.name);
+    setIsModalOpen(true);
+  };
 
   const levelColors: any = {
     BEGINNER: 'bg-slate-100 text-slate-700',
@@ -19,7 +38,7 @@ export function SkillCard({ skill }: SkillCardProps) {
 
   return (
     <>
-      <div className="bg-white rounded-2xl border hover:shadow-md transition-all p-6 flex flex-col h-full group">
+      <div className="bg-white rounded-2xl border hover:shadow-md transition-all p-6 flex flex-col h-full group relative">
         <div className="flex justify-between items-start mb-4">
           <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${levelColors[skill.level] || 'bg-gray-100'}`}>
             {skill.level}
@@ -53,12 +72,25 @@ export function SkillCard({ skill }: SkillCardProps) {
             </div>
           </div>
 
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="p-2 bg-gray-50 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-xl transition-all"
-          >
-            <MessageCircle size={18} />
-          </button>
+          {userLoaded ? (
+            !isOwnSkill ? (
+              <button 
+                onClick={handleBarterClick}
+                className="p-2 bg-gray-50 hover:bg-blue-50 text-gray-400 hover:text-blue-600 rounded-xl transition-all relative z-10"
+                title="Propose Barter"
+              >
+                <MessageCircle size={18} />
+              </button>
+            ) : (
+              <div className="px-3 py-1 bg-gray-50 text-gray-400 rounded-lg text-[10px] font-bold uppercase">
+                Your Skill
+              </div>
+            )
+          ) : (
+            <div className="h-8 w-8 flex items-center justify-center">
+              <Loader2 className="animate-spin text-gray-300" size={16} />
+            </div>
+          )}
         </div>
       </div>
 

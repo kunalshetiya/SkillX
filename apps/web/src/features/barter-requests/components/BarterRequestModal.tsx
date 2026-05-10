@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '@clerk/nextjs';
 import { X, Send, ArrowRightLeft, Loader2, Award } from 'lucide-react';
 import { MarketplaceSkill } from '@web/features/marketplace/api/marketplace-service';
 import { profileService, UserProfile } from '@web/features/profile/api/profile-service';
@@ -13,6 +14,7 @@ interface BarterRequestModalProps {
 }
 
 export function BarterRequestModal({ skill, onClose, onSuccess }: BarterRequestModalProps) {
+  const { getToken } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [selectedSkillId, setSelectedSkillId] = useState<string>('');
   const [message, setMessage] = useState('');
@@ -22,21 +24,30 @@ export function BarterRequestModal({ skill, onClose, onSuccess }: BarterRequestM
 
   useEffect(() => {
     async function loadProfile() {
+      console.log('BarterRequestModal: Loading profile...');
       try {
-        const data = await profileService.getMe();
+        const token = await getToken();
+        if (!token) {
+          setError('You must be signed in to propose a barter.');
+          setLoading(false);
+          return;
+        }
+        const data = await profileService.getMe(token);
+        console.log('BarterRequestModal: Profile loaded successfully');
         setProfile(data);
         const offerings = data.skills.filter(s => s.type === 'OFFERING');
         if (offerings.length > 0) {
           setSelectedSkillId(offerings[0].id);
         }
       } catch (err: any) {
+        console.error('BarterRequestModal: Profile load failed', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     }
     loadProfile();
-  }, []);
+  }, [getToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,12 +55,13 @@ export function BarterRequestModal({ skill, onClose, onSuccess }: BarterRequestM
 
     try {
       setSubmitting(true);
+      const token = await getToken();
       await barterRequestsService.create({
         receiverId: skill.user.id,
         offeredUserSkillId: selectedSkillId,
-        requestedUserSkillId: skill.id, // MarketplaceSkill ID is the UserSkill ID
+        requestedUserSkillId: skill.id, 
         message,
-      });
+      }, token);
       onSuccess();
     } catch (err: any) {
       alert(err.message);
@@ -61,11 +73,17 @@ export function BarterRequestModal({ skill, onClose, onSuccess }: BarterRequestM
   const offerings = profile?.skills.filter(s => s.type === 'OFFERING') || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden relative">
         <div className="px-8 py-6 border-b flex items-center justify-between bg-gray-50">
           <h2 className="text-xl font-extrabold text-gray-900">Propose a Barter</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              onClose();
+            }}
+            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+          >
             <X size={20} />
           </button>
         </div>

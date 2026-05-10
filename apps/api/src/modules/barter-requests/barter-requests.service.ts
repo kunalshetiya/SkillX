@@ -10,8 +10,7 @@ export class BarterRequestsService {
     private readonly usersService: UsersService,
   ) {}
 
-  async create(dto: CreateBarterRequestDto) {
-    const senderId = this.usersService.getMockUserId();
+  async create(senderId: string, dto: CreateBarterRequestDto) {
     const { receiverId, offeredUserSkillId, requestedUserSkillId, message } = dto;
 
     if (senderId === receiverId) {
@@ -62,8 +61,7 @@ export class BarterRequestsService {
     });
   }
 
-  async findIncoming() {
-    const userId = this.usersService.getMockUserId();
+  async findIncoming(userId: string) {
     return this.prisma.barterRequest.findMany({
       where: { receiverId: userId },
       include: {
@@ -77,8 +75,7 @@ export class BarterRequestsService {
     });
   }
 
-  async findOutgoing() {
-    const userId = this.usersService.getMockUserId();
+  async findOutgoing(userId: string) {
     return this.prisma.barterRequest.findMany({
       where: { senderId: userId },
       include: {
@@ -92,8 +89,7 @@ export class BarterRequestsService {
     });
   }
 
-  async updateStatus(id: string, dto: UpdateBarterRequestStatusDto) {
-    const userId = this.usersService.getMockUserId();
+  async updateStatus(userId: string, id: string, dto: UpdateBarterRequestStatusDto) {
     const request = await this.prisma.barterRequest.findUnique({
       where: { id },
     });

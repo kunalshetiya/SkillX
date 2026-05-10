@@ -1,11 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Github, Linkedin, ExternalLink, Plus, Save, X, Award, BookOpen } from 'lucide-react';
+import { useAuth } from '@clerk/nextjs';
+import { User, Github, Linkedin, ExternalLink, Plus, Save, X, Award, BookOpen, Star, MessageSquare } from 'lucide-react';
 import { profileService, UserProfile } from '../api/profile-service';
+import { reviewsService, Reputation, Review } from '@web/features/reviews/api/reviews-service';
+import { ReviewsList } from '@web/features/reviews/components/ReviewsList';
 
 export function ProfileDashboard() {
+  const { getToken } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [reputation, setReputation] = useState<Reputation | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -17,8 +23,17 @@ export function ProfileDashboard() {
   const loadProfile = async () => {
     try {
       setLoading(true);
-      const data = await profileService.getMe();
-      setProfile(data);
+      const token = await getToken();
+      const profileData = await profileService.getMe(token);
+      
+      const [repData, reviewsData] = await Promise.all([
+        reviewsService.getReputation(profileData.id, token),
+        reviewsService.getMyReviews(token),
+      ]);
+      
+      setProfile(profileData);
+      setReputation(repData);
+      setReviews(reviewsData);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -26,7 +41,7 @@ export function ProfileDashboard() {
     }
   };
 
-  if (loading) return (
+  if (loading && !profile) return (
     <div className="flex justify-center items-center py-20">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
@@ -50,7 +65,8 @@ export function ProfileDashboard() {
   const handleRemoveSkill = async (id: string) => {
     if (!confirm('Are you sure you want to remove this skill?')) return;
     try {
-      await profileService.removeSkill(id);
+      const token = await getToken();
+      await profileService.removeSkill(id, token);
       loadProfile();
     } catch (err: any) {
       alert(err.message);
@@ -58,7 +74,7 @@ export function ProfileDashboard() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
       {/* Header Section */}
       <div className="bg-white rounded-2xl shadow-sm border p-8 flex flex-col md:flex-row gap-8 items-center relative overflow-hidden">
         <div className="absolute top-0 right-0 p-4">
@@ -85,6 +101,13 @@ export function ProfileDashboard() {
                <Award size={14} />
                {profile.credits} Credits
              </div>
+
+             {reputation && (
+               <div className="flex items-center gap-1.5 px-4 py-1.5 bg-amber-50 text-amber-700 rounded-full text-sm font-bold border border-amber-100">
+                 <Star size={14} className="fill-amber-400 text-amber-400" />
+                 {reputation.averageRating} ({reputation.totalReviews} Reviews)
+               </div>
+             )}
              
              <div className="flex gap-2">
                {profile.githubUrl && (
@@ -108,8 +131,8 @@ export function ProfileDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left Column: Bio & Skills */}
-        <div className="lg:col-span-8 space-y-8">
+        {/* Left Column: Bio, Skills & Reviews */}
+        <div className="lg:col-span-8 space-y-12">
           {isEditing ? (
             <ProfileEditForm profile={profile} onUpdate={loadProfile} onCancel={() => setIsEditing(false)} />
           ) : (
@@ -163,6 +186,15 @@ export function ProfileDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Reviews Section */}
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <MessageSquare size={20} className="text-blue-600" />
+              Reviews & Feedback
+            </h2>
+            <ReviewsList reviews={reviews} loading={loading} />
+          </div>
         </div>
 
         {/* Right Column: Actions */}
@@ -212,6 +244,7 @@ function SkillBadge({ skill, onRemove }: { skill: any, onRemove: () => void }) {
 }
 
 function ProfileEditForm({ profile, onUpdate, onCancel }: { profile: UserProfile, onUpdate: () => void, onCancel: () => void }) {
+  const { getToken } = useAuth();
   const [formData, setFormData] = useState({
     name: profile.name || '',
     bio: profile.bio || '',
@@ -225,7 +258,8 @@ function ProfileEditForm({ profile, onUpdate, onCancel }: { profile: UserProfile
     e.preventDefault();
     try {
       setSaving(true);
-      await profileService.updateMe(formData);
+      const token = await getToken();
+      await profileService.updateMe(formData, token);
       onUpdate();
       onCancel();
     } catch (err: any) {
@@ -312,6 +346,7 @@ function ProfileEditForm({ profile, onUpdate, onCancel }: { profile: UserProfile
 }
 
 function AddSkillForm({ onSkillAdded }: { onSkillAdded: () => void }) {
+  const { getToken } = useAuth();
   const [skillName, setSkillName] = useState('');
   const [type, setType] = useState<'OFFERING' | 'LEARNING'>('OFFERING');
   const [level, setLevel] = useState('BEGINNER');
@@ -322,7 +357,8 @@ function AddSkillForm({ onSkillAdded }: { onSkillAdded: () => void }) {
     if (!skillName) return;
     try {
       setSubmitting(true);
-      await profileService.addSkill({ skillName, type, level });
+      const token = await getToken();
+      await profileService.addSkill({ skillName, type, level }, token);
       setSkillName('');
       onSkillAdded();
     } catch (err: any) {

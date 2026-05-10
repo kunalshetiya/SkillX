@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
-  OnModuleInit,
   Logger,
 } from "@nestjs/common";
 import { Prisma } from "@skillx/database";
@@ -11,39 +10,48 @@ import { UpdateUserDto } from "./dto/update-user.dto.js";
 import { CreateUserSkillDto } from "./dto/create-user-skill.dto.js";
 
 @Injectable()
-export class UsersService implements OnModuleInit {
+export class UsersService {
   private readonly logger = new Logger(UsersService.name);
-  // Placeholder mock user ID for MVP phase
-  private readonly MOCK_USER_ID = "mock-user-id";
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async onModuleInit() {
-    await this.seedMockUser();
-  }
-
-  private async seedMockUser() {
-    this.logger.log("Checking for default mock user...");
-
-    await this.prisma.user.upsert({
-      where: { id: this.MOCK_USER_ID },
-      update: {},
-      create: {
-        id: this.MOCK_USER_ID,
-        email: "dev@skillx.com",
-        username: "dev_user",
-        name: "Development User",
-        bio: "Automated mock user for MVP development.",
-        credits: 500,
+  /**
+   * JIT Sync: Finds a user by Clerk ID or creates a new one.
+   * Called during the /me endpoint flow.
+   */
+  async findOrCreateUser(clerkId: string, email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: clerkId },
+      include: {
+        skills: {
+          include: {
+            skill: true,
+          },
+        },
       },
     });
 
-    this.logger.log("Default mock user ensured.");
+    if (user) return user;
+
+    this.logger.log(`Creating new user for Clerk ID: ${clerkId}`);
+
+    // Create new user record
+    return this.prisma.user.create({
+      data: {
+        id: clerkId,
+        email: email,
+        username: email.split('@')[0] + '_' + Math.random().toString(36).substring(7),
+        credits: 100, // Starting credits
+      },
+      include: {
+        skills: true,
+      },
+    });
   }
 
-  async getMe() {
+  async getMe(clerkId: string) {
     const user = await this.prisma.user.findUnique({
-      where: { id: this.MOCK_USER_ID },
+      where: { id: clerkId },
       include: {
         skills: {
           include: {
@@ -79,15 +87,14 @@ export class UsersService implements OnModuleInit {
     return user;
   }
 
-  async updateMe(updateUserDto: UpdateUserDto) {
+  async updateMe(clerkId: string, updateUserDto: UpdateUserDto) {
     try {
       return await this.prisma.user.update({
-        where: { id: this.MOCK_USER_ID },
+        where: { id: clerkId },
         data: updateUserDto,
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // Handle unique constraint for username
         if (error.code === "P2002") {
           throw new ConflictException("Username already taken");
         }
@@ -96,10 +103,9 @@ export class UsersService implements OnModuleInit {
     }
   }
 
-  async addUserSkill(createUserSkillDto: CreateUserSkillDto) {
+  async addUserSkill(clerkId: string, createUserSkillDto: CreateUserSkillDto) {
     const { skillName, ...skillDetails } = createUserSkillDto;
 
-    // 1. Find or create the master skill record
     const skill = await this.prisma.skill.upsert({
       where: { name: skillName },
       update: {},
@@ -109,12 +115,11 @@ export class UsersService implements OnModuleInit {
       },
     });
 
-    // 2. Link skill to user
     try {
       return await this.prisma.userSkill.create({
         data: {
           ...skillDetails,
-          userId: this.MOCK_USER_ID,
+          userId: clerkId,
           skillId: skill.id,
         },
         include: {
@@ -131,12 +136,12 @@ export class UsersService implements OnModuleInit {
     }
   }
 
-  async removeUserSkill(userSkillId: string) {
+  async removeUserSkill(clerkId: string, userSkillId: string) {
     try {
       return await this.prisma.userSkill.delete({
         where: {
           id: userSkillId,
-          userId: this.MOCK_USER_ID, // Ensure user can only delete their own skills
+          userId: clerkId,
         },
       });
     } catch (error) {
@@ -147,10 +152,5 @@ export class UsersService implements OnModuleInit {
       }
       throw error;
     }
-  }
-
-  // Helper to get the current user ID (for future auth integration)
-  getMockUserId(): string {
-    return this.MOCK_USER_ID;
   }
 }

@@ -1,5 +1,8 @@
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BarterRequest, BarterRequestStatus } from '../api/barter-requests-service';
-import { ArrowRightLeft, User, MessageCircle, Check, X, Clock } from 'lucide-react';
+import { ArrowRightLeft, User, MessageCircle, Check, X, Clock, Calendar } from 'lucide-react';
+import { ScheduleSessionModal } from '@web/features/sessions/components/ScheduleSessionModal';
 
 interface RequestCardProps {
   request: BarterRequest;
@@ -8,6 +11,8 @@ interface RequestCardProps {
 }
 
 export function RequestCard({ request, type, onUpdateStatus }: RequestCardProps) {
+  const router = useRouter();
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const otherUser = type === 'incoming' ? request.sender : request.receiver;
 
   const statusConfig: Record<BarterRequestStatus, { label: string; color: string; icon: any }> = {
@@ -95,6 +100,28 @@ export function RequestCard({ request, type, onUpdateStatus }: RequestCardProps)
             </button>
           )}
         </div>
+      )}
+
+      {request.status === 'ACCEPTED' && (
+        <div className="pt-2">
+           <button 
+             onClick={() => setIsScheduleModalOpen(true)}
+             className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20"
+           >
+             <Calendar size={18} /> Schedule Session
+           </button>
+        </div>
+      )}
+
+      {isScheduleModalOpen && (
+        <ScheduleSessionModal 
+          request={request}
+          onClose={() => setIsScheduleModalOpen(false)}
+          onSuccess={() => {
+            setIsScheduleModalOpen(false);
+            router.push('/sessions');
+          }}
+        />
       )}
     </div>
   );
