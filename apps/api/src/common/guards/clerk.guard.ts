@@ -44,8 +44,9 @@ export class ClerkGuard implements CanActivate {
       };
 
       return true;
-    } catch (error: any) {
-      this.logger.error(`Clerk auth failed: ${error.message}`);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`Clerk auth failed: ${errorMessage}`);
       throw new UnauthorizedException('Invalid or expired session token');
     }
   }

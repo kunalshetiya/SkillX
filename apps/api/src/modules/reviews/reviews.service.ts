@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Prisma } from "@skillx/database";
 import { PrismaService } from '../../common/prisma/prisma.service.js';
 import { UsersService } from '../users/users.service.js';
 import { CreateReviewDto } from './dto/create-review.dto.js';
@@ -56,8 +57,11 @@ export class ReviewsService {
           session: { include: { taughtUserSkill: { include: { skill: true } } } },
         },
       });
-    } catch (error: any) {
-      if (error.code === 'P2002') {
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
         throw new ConflictException('You have already reviewed this session');
       }
       throw error;
