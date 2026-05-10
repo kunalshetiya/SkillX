@@ -56,12 +56,12 @@ export class SkillsService {
     });
 
     // Map results to include computed reputation
-    return userSkills.map(us => {
-      const user = us.user as any;
+    return userSkills.map((us: any) => {
+      const user = us.user;
       const reviews = user.reviewsReceived || [];
       const totalReviews = reviews.length;
       const averageRating = totalReviews > 0 
-        ? Number((reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / totalReviews).toFixed(1)) 
+        ? Number((reviews.reduce((acc: number, r: { rating: number }) => acc + r.rating, 0) / totalReviews).toFixed(1)) 
         : 0;
       
       const completedSessionsCount = (user.mentorSessions?.length || 0) + (user.learnerSessions?.length || 0);

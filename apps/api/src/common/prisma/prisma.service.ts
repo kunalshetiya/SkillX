@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
+import { Injectable, OnModuleInit, OnModuleDestroy, INestApplication } from "@nestjs/common";
 import { PrismaClient } from "@skillx/database";
 
 @Injectable()
@@ -16,10 +16,8 @@ export class PrismaService
 
   /**
    * Optional: Handle shutdown hooks to ensure Prisma closes connections cleanly.
-   * Note: In newer NestJS versions, this is often handled automatically if
-   * EnableShutdownHooks is called in main.ts.
    */
-  async enableShutdownHooks(app: any) {
+  async enableShutdownHooks(app: INestApplication) {
     process.on("beforeExit", async () => {
       await app.close();
     });

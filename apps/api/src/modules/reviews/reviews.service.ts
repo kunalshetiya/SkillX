@@ -115,7 +115,7 @@ export class ReviewsService {
 
     const totalReviews = reviews.length;
     const averageRating = totalReviews > 0 
-      ? Number((reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)) 
+      ? Number((reviews.reduce((acc: number, r: { rating: number }) => acc + r.rating, 0) / totalReviews).toFixed(1)) 
       : 0;
 
     return {
