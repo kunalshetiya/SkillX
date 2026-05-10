@@ -1,12 +1,33 @@
+# Dependencies
 node_modules
+
+# Next.js
 .next
+
+# Build outputs
 dist
-.turbo
-coverage
-.DS_Store
+build
 
+# TypeScript
+*.tsbuildinfo
+
+# Environment files
 .env
-.env.*
-!.env.example
+.env.local
 
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+# Turborepo
+.turbo
+
+# Turbo logs
+turbo-*.log
+
+# Logs
 *.log

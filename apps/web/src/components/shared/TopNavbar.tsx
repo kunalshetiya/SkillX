@@ -1,6 +1,7 @@
 'use client';
 
-import { Menu, Bell, Search, User } from 'lucide-react';
+import { Menu, Bell, Search } from 'lucide-react';
+import { UserButton, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 
 interface TopNavbarProps {
   onMenuClick: () => void;
@@ -35,15 +36,24 @@ export function TopNavbar({ onMenuClick }: TopNavbarProps) {
         
         <div className="h-8 w-[1px] bg-gray-200 mx-2 hidden sm:block"></div>
         
-        <button className="flex items-center gap-2 p-1 lg:p-2 hover:bg-gray-100 rounded-xl transition-colors">
-          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 font-bold text-xs uppercase">
-            DU
-          </div>
-          <div className="hidden sm:block text-left">
-            <p className="text-xs font-bold text-gray-900 leading-tight">Dev User</p>
-            <p className="text-[10px] text-gray-500 leading-tight">Free Plan</p>
-          </div>
-        </button>
+        <SignedIn>
+          <UserButton 
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                avatarBox: 'w-10 h-10 rounded-xl'
+              }
+            }}
+          />
+        </SignedIn>
+        
+        <SignedOut>
+          <SignInButton mode="modal">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all">
+              Sign In
+            </button>
+          </SignInButton>
+        </SignedOut>
       </div>
     </header>
   );

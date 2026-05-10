@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum SkillType {
@@ -84,10 +85,6 @@ model Skill {
   createdAt   DateTime @default(now())
 
   users               UserSkill[]
-
-  offeredRequests     BarterRequest[] @relation("OfferedSkill")
-
-  requestedRequests   BarterRequest[] @relation("RequestedSkill")
 }
 model UserSkill {
   id               String      @id @default(cuid())
@@ -106,6 +103,11 @@ model UserSkill {
   user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill            Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
+  offeredRequests     BarterRequest[] @relation("OfferedUserSkill")
+  requestedRequests   BarterRequest[] @relation("RequestedUserSkill")
+
+  taughtSessions      Session[]
+
   @@unique([userId, skillId, type])
 }
 model BarterRequest {
@@ -114,8 +116,8 @@ model BarterRequest {
   senderId          String
   receiverId        String
 
-  offeredSkillId    String
-  requestedSkillId  String
+  offeredUserSkillId    String
+  requestedUserSkillId  String
 
   message           String?
 
@@ -128,9 +130,9 @@ model BarterRequest {
 
   receiver          User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
-  offeredSkill      Skill @relation("OfferedSkill", fields: [offeredSkillId], references: [id])
+  offeredUserSkill      UserSkill @relation("OfferedUserSkill", fields: [offeredUserSkillId], references: [id])
 
-  requestedSkill    Skill @relation("RequestedSkill", fields: [requestedSkillId], references: [id])
+  requestedUserSkill    UserSkill @relation("RequestedUserSkill", fields: [requestedUserSkillId], references: [id])
 
   session           Session?
 
@@ -142,6 +144,7 @@ model Session {
   id                String         @id @default(cuid())
 
   barterRequestId   String         @unique
+  taughtUserSkillId String
 
   mentorId          String
   learnerId         String
@@ -158,6 +161,7 @@ model Session {
   updatedAt         DateTime       @updatedAt
 
   barterRequest     BarterRequest  @relation(fields: [barterRequestId], references: [id], onDelete: Cascade)
+  taughtUserSkill   UserSkill      @relation(fields: [taughtUserSkillId], references: [id])
 
   mentor            User @relation("MentorSessions", fields: [mentorId], references: [id], onDelete: Cascade)
 
@@ -167,6 +171,7 @@ model Session {
 
   @@index([mentorId])
   @@index([learnerId])
+  @@index([taughtUserSkillId])
   @@index([status])
 }
 model Review {
@@ -188,6 +193,7 @@ model Review {
 
   reviewedUser     User @relation("ReviewsReceived", fields: [reviewedUserId], references: [id], onDelete: Cascade)
 
+  @@unique([sessionId, reviewerId])
   @@index([reviewerId])
   @@index([reviewedUserId])
   @@index([sessionId])

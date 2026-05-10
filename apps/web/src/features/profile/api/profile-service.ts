@@ -27,13 +27,13 @@ export interface UserProfile {
 }
 
 export const profileService = {
-  getMe: () => fetcher<UserProfile>('/users/me'),
+  getMe: (token?: string | null) => fetcher<UserProfile>('/users/me', {}, token),
   
-  updateMe: (data: Partial<UserProfile>) => 
+  updateMe: (data: Partial<UserProfile>, token?: string | null) => 
     fetcher<UserProfile>('/users/me', {
       method: 'PATCH',
       body: JSON.stringify(data),
-    }),
+    }, token),
 
   addSkill: (data: {
     skillName: string;
@@ -41,9 +41,14 @@ export const profileService = {
     level: string;
     description?: string;
     yearsExperience?: number;
-  }) => 
+  }, token?: string | null) => 
     fetcher<UserSkill>('/users/skills', {
       method: 'POST',
       body: JSON.stringify(data),
-    }),
+    }, token),
+
+  removeSkill: (id: string, token?: string | null) => 
+    fetcher<void>(`/users/skills/${id}`, {
+      method: 'DELETE',
+    }, token),
 };
