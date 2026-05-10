@@ -7,18 +7,29 @@ import { PrismaService } from "./common/prisma/prisma.service.js";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const logger = new Logger("Bootstrap");
+
+  // Health Check (Fastest response for Render/Vercel)
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get("/health", (req: any, res: any) => {
+    res.status(200).send("OK");
+  });
 
   // Prisma Shutdown Hooks
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
 
-  // Security
-  app.enableCors();
+  // Security - Production CORS
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+  app.enableCors({
+    origin: [frontendUrl, "http://localhost:3000"],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    credentials: true,
+  });
 
   // Global Prefix
   app.setGlobalPrefix("api");
 
-  const logger = new Logger("Bootstrap");
   if (!process.env.CLERK_SECRET_KEY) {
     logger.error("CLERK_SECRET_KEY is not defined in environment variables!");
   } else {

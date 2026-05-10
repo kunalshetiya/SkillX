@@ -75,6 +75,15 @@ export class ReviewsService {
     });
   }
 
+  async findBySession(sessionId: string) {
+    return this.prisma.review.findMany({
+      where: { sessionId },
+      include: {
+        reviewer: { select: { id: true, username: true, name: true, imageUrl: true } },
+      },
+    });
+  }
+
   async getMyReviews(userId: string) {
     return this.prisma.review.findMany({
       where: { reviewedUserId: userId },
@@ -87,10 +96,18 @@ export class ReviewsService {
   }
 
   async getReputation(userId: string) {
-    const reviews = await this.prisma.review.findMany({
-      where: { reviewedUserId: userId },
-      select: { rating: true },
-    });
+    const [reviews, completedSessionsCount] = await Promise.all([
+      this.prisma.review.findMany({
+        where: { reviewedUserId: userId },
+        select: { rating: true },
+      }),
+      this.prisma.session.count({
+        where: {
+          OR: [{ mentorId: userId }, { learnerId: userId }],
+          status: 'COMPLETED',
+        },
+      }),
+    ]);
 
     const totalReviews = reviews.length;
     const averageRating = totalReviews > 0 
@@ -100,6 +117,7 @@ export class ReviewsService {
     return {
       averageRating,
       totalReviews,
+      completedSessionsCount,
     };
   }
 }

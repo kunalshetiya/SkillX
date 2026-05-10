@@ -1,13 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service.js';
-import { UsersService } from '../users/users.service.js';
 import { CreateSessionDto, UpdateSessionStatusDto } from './dto/session.dto.js';
 
 @Injectable()
 export class SessionsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly usersService: UsersService,
   ) {}
 
   async create(userId: string, dto: CreateSessionDto) {
@@ -55,7 +53,7 @@ export class SessionsService {
       learnerId = barterRequest.senderId;
     }
 
-    // 5. Check if session already exists for this barter (MVP constraint: 1:1)
+    // 5. Check if session already exists for this barter (1:1 constraint)
     const existingSession = await this.prisma.session.findUnique({
       where: { barterRequestId },
     });

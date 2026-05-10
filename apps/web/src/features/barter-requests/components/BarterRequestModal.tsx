@@ -24,7 +24,6 @@ export function BarterRequestModal({ skill, onClose, onSuccess }: BarterRequestM
 
   useEffect(() => {
     async function loadProfile() {
-      console.log('BarterRequestModal: Loading profile...');
       try {
         const token = await getToken();
         if (!token) {
@@ -33,7 +32,6 @@ export function BarterRequestModal({ skill, onClose, onSuccess }: BarterRequestM
           return;
         }
         const data = await profileService.getMe(token);
-        console.log('BarterRequestModal: Profile loaded successfully');
         setProfile(data);
         const offerings = data.skills.filter(s => s.type === 'OFFERING');
         if (offerings.length > 0) {

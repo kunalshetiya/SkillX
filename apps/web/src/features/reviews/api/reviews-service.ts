@@ -27,6 +27,7 @@ export interface Review {
 export interface Reputation {
   averageRating: number;
   totalReviews: number;
+  completedSessionsCount: number;
 }
 
 export const reviewsService = {
@@ -42,6 +43,8 @@ export const reviewsService = {
   getMyReviews: (token?: string | null) => fetcher<Review[]>('/reviews/me', {}, token),
 
   getByUser: (userId: string, token?: string | null) => fetcher<Review[]>(`/reviews/user/${userId}`, {}, token),
+
+  getBySession: (sessionId: string, token?: string | null) => fetcher<Review[]>(`/reviews/session/${sessionId}`, {}, token),
 
   getReputation: (userId: string, token?: string | null) => fetcher<Reputation>(`/reviews/reputation/${userId}`, {}, token),
 };

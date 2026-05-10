@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useUser, useAuth } from '@clerk/nextjs';
 import { MarketplaceSkill } from '@web/features/marketplace/api/marketplace-service';
-import { Award, User, MessageCircle, Loader2 } from 'lucide-react';
+import { Award, User, MessageCircle, Loader2, Star, CheckCircle2 } from 'lucide-react';
 import { BarterRequestModal } from '@web/features/barter-requests/components/BarterRequestModal';
 
 interface SkillCardProps {
@@ -25,7 +25,6 @@ export function SkillCard({ skill }: SkillCardProps) {
       return;
     }
 
-    console.log('SkillCard: Opening barter modal for', skill.skill.name);
     setIsModalOpen(true);
   };
 
@@ -36,6 +35,8 @@ export function SkillCard({ skill }: SkillCardProps) {
     EXPERT: 'bg-amber-100 text-amber-700'
   };
 
+  const reputation = skill.user.reputation;
+
   return (
     <>
       <div className="bg-white rounded-2xl border hover:shadow-md transition-all p-6 flex flex-col h-full group relative">
@@ -43,12 +44,20 @@ export function SkillCard({ skill }: SkillCardProps) {
           <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${levelColors[skill.level] || 'bg-gray-100'}`}>
             {skill.level}
           </div>
-          {skill.user.isMentor && (
-            <div className="flex items-center gap-1 text-blue-600">
-              <Award size={14} />
-              <span className="text-[10px] font-bold uppercase">Mentor</span>
-            </div>
-          )}
+          <div className="flex flex-col items-end gap-1">
+            {skill.user.isMentor && (
+              <div className="flex items-center gap-1 text-blue-600">
+                <Award size={14} />
+                <span className="text-[10px] font-bold uppercase">Mentor</span>
+              </div>
+            )}
+            {reputation && reputation.totalReviews > 0 && (
+              <div className="flex items-center gap-1 text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
+                <Star size={12} className="fill-amber-500" />
+                <span className="text-[10px] font-bold">{reputation.averageRating}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors mb-2">
@@ -58,6 +67,15 @@ export function SkillCard({ skill }: SkillCardProps) {
         <p className="text-gray-500 text-sm line-clamp-3 mb-6 flex-1 italic">
           {skill.description || "No description provided."}
         </p>
+
+        {reputation && reputation.completedSessionsCount > 0 && (
+          <div className="mb-6 flex items-center gap-2 text-green-600">
+            <CheckCircle2 size={16} />
+            <span className="text-xs font-bold uppercase tracking-tight">
+              {reputation.completedSessionsCount} Sessions Completed
+            </span>
+          </div>
+        )}
 
         <div className="pt-4 border-t flex items-center justify-between">
           <div className="flex items-center gap-2">

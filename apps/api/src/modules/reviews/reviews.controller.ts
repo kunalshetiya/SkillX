@@ -34,6 +34,12 @@ export class ReviewsController {
     return this.reviewsService.findByUser(userId);
   }
 
+  @Get('session/:sessionId')
+  @ApiOperation({ summary: 'Get reviews for a specific session' })
+  findBySession(@Param('sessionId') sessionId: string) {
+    return this.reviewsService.findBySession(sessionId);
+  }
+
   @Get('reputation/:userId')
   @ApiOperation({ summary: 'Get aggregated reputation stats for a user' })
   getReputation(@Param('userId') userId: string) {

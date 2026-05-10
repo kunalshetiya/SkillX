@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+'use client';
+
 import { Session, SessionStatus } from '../api/sessions-service';
-import { Calendar, Clock, ExternalLink, Check, X, User, BookOpen, Star } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
+import { Calendar, Clock, ExternalLink, Check, X, Star, BookOpen } from 'lucide-react';
+import { useState } from 'react';
 import { ReviewModal } from '@web/features/reviews/components/ReviewModal';
 
 interface SessionCardProps {
@@ -12,9 +14,8 @@ interface SessionCardProps {
 export function SessionCard({ session, onUpdateStatus }: SessionCardProps) {
   const { user } = useUser();
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  
-  // Use Clerk user ID for role detection
-  const isMentor = session.mentor.id === user?.id;
+
+  const isMentor = session.mentorId === user?.id;
   const otherUser = isMentor ? session.learner : session.mentor;
 
   const statusConfig: Record<SessionStatus, { label: string; color: string; icon: any }> = {
@@ -32,7 +33,7 @@ export function SessionCard({ session, onUpdateStatus }: SessionCardProps) {
     <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-6 transition-all hover:shadow-md">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-600 font-bold uppercase overflow-hidden">
+          <div className="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-gray-600 font-bold uppercase overflow-hidden text-lg">
              {otherUser.imageUrl ? (
                <img src={otherUser.imageUrl} alt={otherUser.username} className="w-full h-full object-cover" />
              ) : (

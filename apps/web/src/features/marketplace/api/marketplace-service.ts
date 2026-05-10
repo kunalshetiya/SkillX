@@ -6,6 +6,11 @@ export interface UserSummary {
   name?: string;
   imageUrl?: string;
   isMentor: boolean;
+  reputation?: {
+    averageRating: number;
+    totalReviews: number;
+    completedSessionsCount: number;
+  };
 }
 
 export interface SkillSummary {
