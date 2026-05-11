@@ -1,7 +1,22 @@
-import { PrismaClient, Prisma, SkillType, SkillLevel } from '@prisma/client';
+import { 
+  PrismaClient, 
+  Prisma, 
+  SkillType, 
+  SkillLevel, 
+  BarterRequestStatus, 
+  SessionStatus, 
+  CreditTransactionType 
+} from '@prisma/client';
 
 export * from '@prisma/client';
-export { Prisma, SkillType, SkillLevel };
+export { 
+  Prisma, 
+  SkillType, 
+  SkillLevel, 
+  BarterRequestStatus, 
+  SessionStatus, 
+  CreditTransactionType 
+};
 
 const prismaClientSingleton = () => {
   return new PrismaClient();

@@ -133,7 +133,7 @@ export class SessionsService {
 
     return this.prisma.session.update({
       where: { id },
-      data: { status: dto.status as any },
+      data: { status: dto.status },
       include: {
         mentor: { select: { id: true, username: true, name: true, imageUrl: true } },
         learner: { select: { id: true, username: true, name: true, imageUrl: true } },

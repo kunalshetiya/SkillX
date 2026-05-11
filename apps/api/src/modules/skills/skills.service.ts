@@ -56,7 +56,7 @@ export class SkillsService {
     });
 
     // Map results to include computed reputation
-    return userSkills.map((us: any) => {
+    return userSkills.map((us) => {
       const user = us.user;
       const reviews = user.reviewsReceived || [];
       const totalReviews = reviews.length;

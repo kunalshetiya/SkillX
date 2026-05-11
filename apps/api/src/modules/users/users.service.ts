@@ -140,12 +140,19 @@ export class UsersService {
 
   async removeUserSkill(clerkId: string, userSkillId: string) {
     try {
-      return await this.prisma.userSkill.delete({
+      // Use deleteMany to ensure both ID and userId match for security
+      const result = await this.prisma.userSkill.deleteMany({
         where: {
           id: userSkillId,
           userId: clerkId,
         },
       });
+
+      if (result.count === 0) {
+        throw new NotFoundException("Skill not found for your profile");
+      }
+      
+      return { id: userSkillId };
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
