@@ -9,7 +9,9 @@
   ],
   "scripts": {
     "build": "turbo build",
-    "build:api": "npm run db:generate --workspace=@skillx/database && npm run build --workspace=@skillx/database && npm run build --workspace=@skillx/api",
+    "build:api": "turbo build --filter=@skillx/api",
+    "db:generate": "turbo db:generate",
+    "postinstall": "npm run db:generate",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
