@@ -1,0 +1,237 @@
+generator client {
+  provider      = "prisma-client-js"
+  output        = "../src/generated/client"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum SkillType {
+  OFFERING
+  LEARNING
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum BarterRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum SessionStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum CreditTransactionType {
+  EARNED
+  SPENT
+  BONUS
+  REFUND
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  username      String   @unique
+  name          String?
+  bio           String?
+  imageUrl      String?
+
+  linkedinUrl   String?
+  githubUrl     String?
+  portfolioUrl  String?
+
+  credits       Int      @default(100)
+
+  isMentor      Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  skills         UserSkill[]
+  sentRequests   BarterRequest[] @relation("SentRequests")
+  receivedRequests BarterRequest[] @relation("ReceivedRequests")
+
+  mentorSessions Session[] @relation("MentorSessions")
+  learnerSessions Session[] @relation("LearnerSessions")
+
+  reviewsGiven    Review[] @relation("ReviewsGiven")
+  reviewsReceived Review[] @relation("ReviewsReceived")
+
+  creditTransactions CreditTransaction[]
+
+  notifications Notification[]
+}
+model Skill {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  category    String?
+
+  createdAt   DateTime @default(now())
+
+  users               UserSkill[]
+}
+model UserSkill {
+  id               String      @id @default(cuid())
+
+  userId           String
+  skillId          String
+
+  type             SkillType
+  level            SkillLevel
+
+  yearsExperience  Int?
+  description      String?
+
+  createdAt        DateTime    @default(now())
+
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill            Skill       @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  offeredRequests     BarterRequest[] @relation("OfferedUserSkill")
+  requestedRequests   BarterRequest[] @relation("RequestedUserSkill")
+
+  taughtSessions      Session[]
+
+  @@unique([userId, skillId, type])
+}
+model BarterRequest {
+  id                String               @id @default(cuid())
+
+  senderId          String
+  receiverId        String
+
+  offeredUserSkillId    String
+  requestedUserSkillId  String
+
+  message           String?
+
+  status            BarterRequestStatus  @default(PENDING)
+
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  sender            User @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiver          User @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  offeredUserSkill      UserSkill @relation("OfferedUserSkill", fields: [offeredUserSkillId], references: [id])
+
+  requestedUserSkill    UserSkill @relation("RequestedUserSkill", fields: [requestedUserSkillId], references: [id])
+
+  session           Session?
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+}
+model Session {
+  id                String         @id @default(cuid())
+
+  barterRequestId   String         @unique
+  taughtUserSkillId String
+
+  mentorId          String
+  learnerId         String
+
+  scheduledAt       DateTime
+  durationMinutes   Int            @default(60)
+
+  meetLink          String?
+  notes             String?
+
+  status            SessionStatus  @default(SCHEDULED)
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  barterRequest     BarterRequest  @relation(fields: [barterRequestId], references: [id], onDelete: Cascade)
+  taughtUserSkill   UserSkill      @relation(fields: [taughtUserSkillId], references: [id])
+
+  mentor            User @relation("MentorSessions", fields: [mentorId], references: [id], onDelete: Cascade)
+
+  learner           User @relation("LearnerSessions", fields: [learnerId], references: [id], onDelete: Cascade)
+
+  reviews           Review[]
+
+  @@index([mentorId])
+  @@index([learnerId])
+  @@index([taughtUserSkillId])
+  @@index([status])
+}
+model Review {
+  id               String    @id @default(cuid())
+
+  sessionId        String
+
+  reviewerId       String
+  reviewedUserId   String
+
+  rating           Int
+  comment          String?
+
+  createdAt        DateTime  @default(now())
+
+  session          Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  reviewer         User @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  reviewedUser     User @relation("ReviewsReceived", fields: [reviewedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, reviewerId])
+  @@index([reviewerId])
+  @@index([reviewedUserId])
+  @@index([sessionId])
+}
+model CreditTransaction {
+  id           String                  @id @default(cuid())
+
+  userId       String
+
+  amount       Int
+
+  type         CreditTransactionType
+
+  reason       String
+
+  createdAt    DateTime                @default(now())
+
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+}
+model Notification {
+  id          String    @id @default(cuid())
+
+  userId      String
+
+  title       String
+  message     String
+
+  isRead      Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}

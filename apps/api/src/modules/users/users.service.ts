@@ -94,11 +94,10 @@ export class UsersService {
         data: updateUserDto,
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2002"
-      ) {
-        throw new ConflictException("Username already taken");
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2002") {
+          throw new ConflictException("Username already taken");
+        }
       }
       throw error;
     }
@@ -128,11 +127,10 @@ export class UsersService {
         },
       });
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2002"
-      ) {
-        throw new ConflictException("You have already added this skill type");
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2002") {
+          throw new ConflictException("You have already added this skill type");
+        }
       }
       throw error;
     }
@@ -154,11 +152,10 @@ export class UsersService {
       
       return { id: userSkillId };
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === "P2025"
-      ) {
-        throw new NotFoundException("Skill not found for your profile");
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2025") {
+          throw new NotFoundException("Skill not found for your profile");
+        }
       }
       throw error;
     }
