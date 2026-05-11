@@ -1,20 +1,20 @@
 {
   "name": "skillx",
   "private": true,
-  "packageManager": "npm@11.6.1",
+  "packageManager": "npm@10.8.2",
   "description": "SkillX - AI-powered skill barter and mentorship platform",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
   "scripts": {
-    "build": "turbo build",
-    "build:api": "turbo build --filter=@skillx/api",
-    "db:generate": "turbo db:generate",
+    "build": "npx turbo build",
+    "build:api": "npx turbo build --filter=@skillx/api",
+    "db:generate": "npx turbo db:generate",
     "postinstall": "npm run db:generate",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "test": "turbo test",
+    "dev": "npx turbo dev",
+    "lint": "npx turbo lint",
+    "test": "npx turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "engines": {
